@@ -10,10 +10,10 @@ import (
 )
 
 type DataProducer interface {
-	Produce(data string) ([]string, error)
+	produce(data string) ([]string, error)
 }
 type ResultProcessor interface {
-	Process(data []string) error
+	process(data []string) error
 }
 
 type Service interface {
@@ -23,11 +23,11 @@ type Service interface {
 
 type StringProvider struct{}
 
-func (sp StringProvider) Produce(data string) ([]string, error) {
+func (sp StringProvider) produce(data string) ([]string, error) {
 	return []string{strings.TrimSpace(data)}, nil
 }
 
-func (sp StringProvider) Process(data []string) error {
+func (sp StringProvider) process(data []string) error {
 	text := strings.Join(data, " ")
 	fmt.Println(text)
 
@@ -38,7 +38,7 @@ type FileProvider struct {
 	filePath string
 }
 
-func (fp *FileProvider) Produce(data string) ([]string, error) {
+func (fp *FileProvider) produce(data string) ([]string, error) {
 	//./e.txt
 	data = strings.TrimSuffix(data, "\n")
 	data = strings.TrimSuffix(data, "\r")
@@ -60,7 +60,7 @@ func (fp *FileProvider) Produce(data string) ([]string, error) {
 	return []string{strings.TrimSpace(wr.String())}, nil
 }
 
-func (fp FileProvider) Process(data []string) error {
+func (fp FileProvider) process(data []string) error {
 	file, err := os.Create(fp.filePath)
 	writer := bufio.NewWriter(file)
 	if err != nil {
@@ -108,7 +108,7 @@ func main() {
 
 	input, _ = bufio.NewReader(os.Stdin).ReadString('\n')
 
-	buffer, err := service.Produce(input)
+	buffer, err := service.produce(input)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -118,7 +118,7 @@ func main() {
 		buffer[i] = MaskingUrl(buffer[i])
 	}
 
-	err = service.Process(buffer)
+	err = service.process(buffer)
 	if err != nil {
 		fmt.Println(err)
 		return
