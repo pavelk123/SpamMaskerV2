@@ -16,7 +16,7 @@ type ResultProcessor interface {
 	Process(data []string) error
 }
 
-type MaskingService interface {
+type Service interface {
 	DataProducer
 	ResultProcessor
 }
@@ -86,7 +86,7 @@ func main() {
 		FileInput
 	)
 
-	var service MaskingService
+	var service Service
 	var input string
 
 	fmt.Printf("Select data input method (%d - string, %d - file): ", StringInput, FileInput)
