@@ -69,8 +69,12 @@ func (fp FileProvider) Process(data []string) error {
 	defer file.Close()
 
 	for _, str := range data {
-		writer.WriteString(str)
+		_,err = writer.WriteString(str)
+		if err!=nil{
+			return err
+		}
 	}
+	
 	writer.Flush()
 	return nil
 }
