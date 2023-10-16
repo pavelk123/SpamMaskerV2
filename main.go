@@ -2,103 +2,40 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
+
+	pc "./processor"
+	pd "./producer"
 )
 
-type DataProducer interface {
-	produce(data string) ([]string, error)
-}
-type ResultProcessor interface {
-	process(data []string) error
-}
-
-type Service interface {
-	DataProducer
-	ResultProcessor
-}
-
-type StringProvider struct{}
-
-func (sp StringProvider) produce(data string) ([]string, error) {
-	return []string{strings.TrimSpace(data)}, nil
-}
-
-func (sp StringProvider) process(data []string) error {
-	text := strings.Join(data, " ")
-	fmt.Println(text)
-
-	return nil
-}
-
-type FileProvider struct {
-	filePath string
-}
-
-func (fp *FileProvider) produce(data string) ([]string, error) {
-	//./e.txt
-	data = strings.TrimSuffix(data, "\n")
-	data = strings.TrimSuffix(data, "\r")
-	file, errFile := os.OpenFile(data, os.O_RDONLY, 0666)
-	if errFile != nil {
-		return nil, errFile
-	}
-	defer file.Close()
-
-	fp.filePath = data
-
-	var wr bytes.Buffer
-	sc := bufio.NewScanner(file)
-	for sc.Scan() {
-		wr.WriteString(sc.Text())
-		wr.WriteString("\n")
-	}
-
-	return []string{strings.TrimSpace(wr.String())}, nil
-}
-
-func (fp FileProvider) process(data []string) error {
-	file, err := os.Create(fp.filePath)
-	writer := bufio.NewWriter(file)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	for _, str := range data {
-		_,err = writer.WriteString(str)
-		if err!=nil{
-			return err
-		}
-	}
-	
-	writer.Flush()
-	return nil
+type Service struct {
+	Producer  pd.Producer
+	Processor pc.Processor
 }
 
 func main() {
-
 	const (
 		StringInput = iota + 1
 		FileInput
 	)
 
-	var service Service
+	var service Service = Service{}
 	var input string
+	var errInput error
 
 	fmt.Printf("Select data input method (%d - string, %d - file): ", StringInput, FileInput)
 	fmt.Scanf("%s\n", &input)
 
 	switch input {
 	case strconv.Itoa(StringInput):
-		service = StringProvider{}
+		service.Producer = pd.StringProducer{}
 		fmt.Print("Input str: ")
 
+	//./test/e.txt
 	case strconv.Itoa(FileInput):
-		service = &FileProvider{}
+		service.Producer = &pd.FileProducer{}
 		fmt.Print("Input path: ")
 
 	default:
@@ -106,19 +43,36 @@ func main() {
 		return
 	}
 
-	input, _ = bufio.NewReader(os.Stdin).ReadString('\n')
+	input, errInput = bufio.NewReader(os.Stdin).ReadString('\n')
+	if errInput != nil {
+		fmt.Println(errInput)
+		return
+	}
 
-	buffer, err := service.produce(input)
+	buffer, err := service.Producer.Produce(input)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
 	for i := range buffer {
-		buffer[i] = MaskingUrl(buffer[i])
+		buffer[i] = maskingUrl(buffer[i])
 	}
 
-	err = service.process(buffer)
+	if fp, ok := service.Producer.(*pd.FileProducer); ok {
+		path := fp.GetFilePath()
+		processor := pc.FileProcessor{}
+		processor.Init(path)
+		service.Processor = &processor
+
+	} else if _, ok := service.Producer.(pd.StringProducer); ok {
+		service.Processor = pc.StringProcessor{}
+	} else {
+		fmt.Println("Problem with Processor")
+		return
+	}
+
+	err = service.Processor.Process(buffer)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -127,7 +81,7 @@ func main() {
 	fmt.Println("Complete")
 }
 
-func MaskingUrl(str string) string {
+func maskingUrl(str string) string {
 	var startUrlIndex, isMasking = 0, false
 	buffer := []byte(str)
 
