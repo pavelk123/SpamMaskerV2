@@ -1,11 +1,11 @@
 package service
 
 import (
-	"os"
 	"bufio"
+	"os"
 )
 
-type FilePresenter struct{
+type FilePresenter struct {
 	outputFile string
 }
 
@@ -24,11 +24,18 @@ func (fp *FilePresenter) Present(data []string) error {
 		}
 	}
 
-	writer.Flush()
+	errFlush := writer.Flush()
+	if errFlush != nil {
+		return errFlush
+	}
+
 	return nil
 }
 
-func NewFilePresenter(outputFile string)*FilePresenter{
+func NewFilePresenter(outputFile string) *FilePresenter {
+	if outputFile == "" {
+		outputFile = defaultPath
+	}
+
 	return &FilePresenter{outputFile: outputFile}
 }
-

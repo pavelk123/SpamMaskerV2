@@ -1,44 +1,45 @@
 package main
 
 import (
-	"fmt"
+	"os"
 
-	"./service"
+	service "github.com/pavelk123/SpamMaskerV2/service"
+	slog "golang.org/x/exp/slog"
 )
 
 func main() {
-	fileProducer := service.NewFileProducer()
-	filePresenter := service.NewFilePresenter("./test/output.txt")
+	//"./test/e.txt"
+	//"./test/output.txt"
+	var inputFile string
+	var outputFile string
 
-	service := service.NewService(fileProducer, filePresenter)
+	paths := os.Args[1:]
 
-	err := service.Run("./test/e.txt", maskingUrl)
-
-	if err != nil {
-		fmt.Println(err)
+	switch len(paths) {
+	case 0:
+		slog.Error("Params not provided")
+		return
+	case 1:
+		inputFile = paths[0]
+		outputFile = ""
+	case 2:
+		inputFile = paths[0]
+		outputFile = paths[1]
+	default:
+		slog.Error("Toooooo much params")
 		return
 	}
 
-	fmt.Println("Complete")
-}
+	fileProducer := service.NewFileProducer(inputFile)
+	filePresenter := service.NewFilePresenter(outputFile)
 
-func maskingUrl(str string) string {
-	var startUrlIndex, isMasking = 0, false
-	buffer := []byte(str)
+	service := service.NewService(fileProducer, filePresenter)
+	err := service.Run()
 
-	for i := range buffer {
-		if buffer[i] == 'h' && string(buffer[i:i+7]) == "http://" {
-			startUrlIndex = i + 7
-			isMasking = true
-		}
-
-		if startUrlIndex != 0 && i >= startUrlIndex && isMasking {
-			if buffer[i] == ' ' {
-				isMasking = false
-			} else {
-				buffer[i] = '*'
-			}
-		}
+	if err != nil {
+		slog.Error(err.Error())
+		return
 	}
-	return string(buffer)
+
+	slog.Info("Complete")
 }

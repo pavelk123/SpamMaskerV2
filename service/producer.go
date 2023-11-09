@@ -7,13 +7,16 @@ import (
 	"strings"
 )
 
+const defaultPath string = "./test/output.txt"
+
 type FileProducer struct {
+	inputFile string
 }
 
-func (f FileProducer) Produce(inputFile string) ([]string, error) {
-	inputFile = strings.TrimSuffix(inputFile, "\n")
-	inputFile = strings.TrimSuffix(inputFile, "\r")
-	file, errFile := os.OpenFile(inputFile, os.O_RDONLY, 0666)
+func (f FileProducer) Produce() ([]string, error) {
+	f.inputFile = strings.TrimSuffix(f.inputFile, "\n")
+	f.inputFile = strings.TrimSuffix(f.inputFile, "\r")
+	file, errFile := os.OpenFile(f.inputFile, os.O_RDONLY, 0666)
 	if errFile != nil {
 		return nil, errFile
 	}
@@ -32,6 +35,6 @@ func (f FileProducer) Produce(inputFile string) ([]string, error) {
 	return []string{strings.TrimSpace(wr.String())}, nil
 }
 
-func NewFileProducer() *FileProducer {
-	return &FileProducer{}
+func NewFileProducer(inputFile string) *FileProducer {
+	return &FileProducer{inputFile: inputFile}
 }
