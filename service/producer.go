@@ -16,19 +16,19 @@ type FileProducer struct {
 func (f FileProducer) Produce() ([]string, error) {
 	f.inputFile = strings.TrimSuffix(f.inputFile, "\n")
 	f.inputFile = strings.TrimSuffix(f.inputFile, "\r")
-	file, errFile := os.OpenFile(f.inputFile, os.O_RDONLY, 0666)
-	if errFile != nil {
-		return nil, errFile
+	file, err := os.OpenFile(f.inputFile, os.O_RDONLY, 0666)
+	if err != nil {
+		return nil, err
 	}
 	defer file.Close()
 
 	var wr bytes.Buffer
 	sc := bufio.NewScanner(file)
 	for sc.Scan() {
-		_, errScan := wr.WriteString(sc.Text())
+		_, err = wr.WriteString(sc.Text())
 		wr.WriteString("\n")
-		if errScan != nil {
-			return nil, errScan
+		if err != nil {
+			return nil, err
 		}
 	}
 

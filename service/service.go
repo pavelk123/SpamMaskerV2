@@ -15,18 +15,18 @@ type Service struct {
 
 func (s *Service) Run() error {
 
-	data, errRead := s.prod.Produce()
-	if errRead != nil {
-		return errRead
+	data, err := s.prod.Produce()
+	if err != nil {
+		return err
 	}
 
 	for i := range data {
 		data[i] = s.maskingUrl(data[i])
 	}
 
-	errPres := s.pres.Present(data)
-	if errPres != nil {
-		return errPres
+	err = s.pres.Present(data)
+	if err != nil {
+		return err
 	}
 
 	return nil

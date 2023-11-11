@@ -24,9 +24,9 @@ func (fp *FilePresenter) Present(data []string) error {
 		}
 	}
 
-	errFlush := writer.Flush()
-	if errFlush != nil {
-		return errFlush
+	err = writer.Flush()
+	if err != nil {
+		return err
 	}
 
 	return nil
