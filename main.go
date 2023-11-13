@@ -10,9 +10,7 @@ import (
 func main() {
 	//"./test/e.txt"
 	//"./test/output.txt"
-	var inputFile string
-	var outputFile string
-
+	var inputFile,outputFile string
 	paths := os.Args[1:]
 
 	switch len(paths) {

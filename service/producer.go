@@ -24,12 +24,12 @@ func (f FileProducer) Produce() ([]string, error) {
 
 	var wr bytes.Buffer
 	sc := bufio.NewScanner(file)
+	
 	for sc.Scan() {
-		_, err = wr.WriteString(sc.Text())
-		wr.WriteString("\n")
-		if err != nil {
+		if _, err = wr.WriteString(sc.Text());err != nil {
 			return nil, err
 		}
+		wr.WriteString("\n")
 	}
 
 	return []string{strings.TrimSpace(wr.String())}, nil

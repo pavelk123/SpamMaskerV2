@@ -14,7 +14,6 @@ type Service struct {
 }
 
 func (s *Service) Run() error {
-
 	data, err := s.prod.Produce()
 	if err != nil {
 		return err
@@ -24,8 +23,7 @@ func (s *Service) Run() error {
 		data[i] = s.maskingUrl(data[i])
 	}
 
-	err = s.pres.Present(data)
-	if err != nil {
+	if err = s.pres.Present(data);err != nil{
 		return err
 	}
 
@@ -45,9 +43,10 @@ func (s Service) maskingUrl(str string) string {
 		if startUrlIndex != 0 && i >= startUrlIndex && isMasking {
 			if buffer[i] == ' ' {
 				isMasking = false
-			} else {
-				buffer[i] = '*'
-			}
+				continue
+			} 
+				
+			buffer[i] = '*'
 		}
 	}
 	return string(buffer)

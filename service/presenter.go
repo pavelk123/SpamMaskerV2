@@ -11,10 +11,10 @@ type FilePresenter struct {
 
 func (fp *FilePresenter) Present(data []string) error {
 	file, err := os.Create(fp.outputFile)
-	writer := bufio.NewWriter(file)
 	if err != nil {
 		return err
 	}
+	writer := bufio.NewWriter(file)
 	defer file.Close()
 
 	for _, str := range data {
@@ -24,8 +24,7 @@ func (fp *FilePresenter) Present(data []string) error {
 		}
 	}
 
-	err = writer.Flush()
-	if err != nil {
+	if err = writer.Flush();err != nil { 
 		return err
 	}
 
