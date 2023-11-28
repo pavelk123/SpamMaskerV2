@@ -10,7 +10,7 @@ import (
 func main() {
 	//"./test/e.txt"
 	//"./test/output.txt"
-	var inputFile,outputFile string
+	var inputFile, outputFile string
 	paths := os.Args[1:]
 
 	switch len(paths) {
@@ -32,9 +32,7 @@ func main() {
 	filePresenter := service.NewFilePresenter(outputFile)
 
 	service := service.NewService(fileProducer, filePresenter)
-	err := service.Run()
-
-	if err != nil {
+	if err := service.Run(); err != nil {
 		slog.Error(err.Error())
 		return
 	}

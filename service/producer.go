@@ -3,38 +3,45 @@ package service
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"os"
 	"strings"
 )
 
-const defaultPath string = "./test/output.txt"
-
-type FileProducer struct {
+type fileProducer struct {
 	inputFile string
 }
 
-func (f FileProducer) Produce() ([]string, error) {
+func (f fileProducer) produce() ([]string, error) {
+	errPrefix := "fileProducer.produce:"
+
 	f.inputFile = strings.TrimSuffix(f.inputFile, "\n")
 	f.inputFile = strings.TrimSuffix(f.inputFile, "\r")
 	file, err := os.OpenFile(f.inputFile, os.O_RDONLY, 0666)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s %w", errPrefix, err)
 	}
-	defer file.Close()
+
+	defer func() {
+		if errDefer := file.Close(); errDefer != nil {
+			err = fmt.Errorf("%s %w", errPrefix, errDefer)
+		}
+	}()
 
 	var wr bytes.Buffer
 	sc := bufio.NewScanner(file)
-	
+
 	for sc.Scan() {
-		if _, err = wr.WriteString(sc.Text());err != nil {
-			return nil, err
+		if _, err = wr.WriteString(sc.Text()); err != nil {
+			return nil, fmt.Errorf("%s %w", errPrefix, err)
 		}
 		wr.WriteString("\n")
 	}
 
-	return []string{strings.TrimSpace(wr.String())}, nil
+	return []string{strings.TrimSpace(wr.String())}, err
 }
 
-func NewFileProducer(inputFile string) *FileProducer {
-	return &FileProducer{inputFile: inputFile}
+// NewFileProducer is constructor of fileProducer
+func NewFileProducer(inputFile string) *fileProducer {
+	return &fileProducer{inputFile: inputFile}
 }

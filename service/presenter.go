@@ -2,39 +2,51 @@ package service
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 )
 
-type FilePresenter struct {
+const defaultPath string = "./test/output.txt"
+
+type filePresenter struct {
 	outputFile string
 }
 
-func (fp *FilePresenter) Present(data []string) error {
+func (fp *filePresenter) present(data []string) error {
+	errPrefix := "filePresenter.present:"
+
 	file, err := os.Create(fp.outputFile)
 	if err != nil {
-		return err
+		return fmt.Errorf("%s %w", errPrefix, err)
 	}
+
 	writer := bufio.NewWriter(file)
-	defer file.Close()
+	defer func() {
+		if errDefer := file.Close(); err != nil {
+			err = fmt.Errorf("%s %w", errPrefix, errDefer)
+		}
+	}()
 
 	for _, str := range data {
 		_, err = writer.WriteString(str)
 		if err != nil {
-			return err
+			return fmt.Errorf("%s %w", errPrefix, err)
 		}
 	}
 
-	if err = writer.Flush();err != nil { 
-		return err
+	if err = writer.Flush(); err != nil {
+		return fmt.Errorf("%s %w", errPrefix, err)
 	}
 
-	return nil
+	return err
 }
 
-func NewFilePresenter(outputFile string) *FilePresenter {
+// NewFilePresenter is constructor of filePresenter
+// If path for output file is empty, then output file will be default
+func NewFilePresenter(outputFile string) *filePresenter {
 	if outputFile == "" {
 		outputFile = defaultPath
 	}
 
-	return &FilePresenter{outputFile: outputFile}
+	return &filePresenter{outputFile: outputFile}
 }
