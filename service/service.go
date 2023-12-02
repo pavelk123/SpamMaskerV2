@@ -23,11 +23,11 @@ type Service struct {
 
 //Run is method for start Service working
 func (s *Service) Run() error {
-	errPrefix := "Service.Run:"
+	
 
 	data, err := s.prod.produce()
 	if err != nil {
-		return fmt.Errorf("%s %w", errPrefix, err)
+		return fmt.Errorf("s.prod.produce: %w", err)
 	}
 
 	for i := range data {
@@ -35,7 +35,7 @@ func (s *Service) Run() error {
 	}
 
 	if err = s.pres.present(data); err != nil {
-		return fmt.Errorf("%s %w", errPrefix, err)
+		return fmt.Errorf("s.prod.produce: %w", err)
 	}
 
 	return nil

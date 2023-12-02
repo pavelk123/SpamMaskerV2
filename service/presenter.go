@@ -13,29 +13,27 @@ type filePresenter struct {
 }
 
 func (fp *filePresenter) present(data []string) error {
-	errPrefix := "filePresenter.present:"
-
+	
 	file, err := os.Create(fp.outputFile)
 	if err != nil {
-		return fmt.Errorf("%s %w", errPrefix, err)
+		return fmt.Errorf("os.Create: %w", err)
 	}
 
 	writer := bufio.NewWriter(file)
 	defer func() {
 		if errDefer := file.Close(); err != nil {
-			err = fmt.Errorf("%s %w", errPrefix, errDefer)
+			err = fmt.Errorf("file.Close: %w", errDefer)
 		}
 	}()
 
 	for _, str := range data {
-		_, err = writer.WriteString(str)
-		if err != nil {
-			return fmt.Errorf("%s %w", errPrefix, err)
+		if _, err = writer.WriteString(str);err != nil {
+			return fmt.Errorf("writer.WriteString: %w", err)
 		}
 	}
 
 	if err = writer.Flush(); err != nil {
-		return fmt.Errorf("%s %w", errPrefix, err)
+		return fmt.Errorf("writer.Flush: %w", err)
 	}
 
 	return err

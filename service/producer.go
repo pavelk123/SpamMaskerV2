@@ -13,18 +13,18 @@ type fileProducer struct {
 }
 
 func (f fileProducer) produce() ([]string, error) {
-	errPrefix := "fileProducer.produce:"
+	
 
 	f.inputFile = strings.TrimSuffix(f.inputFile, "\n")
 	f.inputFile = strings.TrimSuffix(f.inputFile, "\r")
 	file, err := os.OpenFile(f.inputFile, os.O_RDONLY, 0666)
 	if err != nil {
-		return nil, fmt.Errorf("%s %w", errPrefix, err)
+		return nil, fmt.Errorf("os.OpenFile: %w",err)
 	}
 
 	defer func() {
 		if errDefer := file.Close(); errDefer != nil {
-			err = fmt.Errorf("%s %w", errPrefix, errDefer)
+			err = fmt.Errorf("file.Close: %w", errDefer)
 		}
 	}()
 
@@ -33,7 +33,7 @@ func (f fileProducer) produce() ([]string, error) {
 
 	for sc.Scan() {
 		if _, err = wr.WriteString(sc.Text()); err != nil {
-			return nil, fmt.Errorf("%s %w", errPrefix, err)
+			return nil, fmt.Errorf("wr.WriteString: %w", err)
 		}
 		wr.WriteString("\n")
 	}
