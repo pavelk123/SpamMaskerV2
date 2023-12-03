@@ -4,44 +4,48 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io/fs"
 	"os"
 	"strings"
 )
 
-type fileProducer struct {
+type FileProducer struct {
 	inputFile string
 }
 
-func (f fileProducer) produce() ([]string, error) {
-	
+func (f *FileProducer) produce() ([]string, error) {
+	const fileMode uint = 0o666
 
 	f.inputFile = strings.TrimSuffix(f.inputFile, "\n")
+
 	f.inputFile = strings.TrimSuffix(f.inputFile, "\r")
-	file, err := os.OpenFile(f.inputFile, os.O_RDONLY, 0666)
+
+	file, err := os.OpenFile(f.inputFile, os.O_RDONLY, fs.FileMode(fileMode))
 	if err != nil {
-		return nil, fmt.Errorf("os.OpenFile: %w",err)
+		return nil, fmt.Errorf("os.OpenFile: %w", err)
 	}
 
-	defer func() {
-		if errDefer := file.Close(); errDefer != nil {
-			err = fmt.Errorf("file.Close: %w", errDefer)
-		}
-	}()
+	var writer bytes.Buffer
 
-	var wr bytes.Buffer
 	sc := bufio.NewScanner(file)
 
 	for sc.Scan() {
-		if _, err = wr.WriteString(sc.Text()); err != nil {
-			return nil, fmt.Errorf("wr.WriteString: %w", err)
+		if _, err = writer.WriteString(sc.Text()); err != nil {
+			return nil, fmt.Errorf("writer.WriteString: %w", err)
 		}
-		wr.WriteString("\n")
+
+		writer.WriteString("\n")
 	}
 
-	return []string{strings.TrimSpace(wr.String())}, err
+	if err = file.Close(); err != nil {
+		return nil, fmt.Errorf("file.Close: %w", err)
+	}
+
+	return []string{strings.TrimSpace(writer.String())}, nil
 }
 
 // NewFileProducer is constructor of fileProducer
-func NewFileProducer(inputFile string) *fileProducer {
-	return &fileProducer{inputFile: inputFile}
+
+func NewFileProducer(inputFile string) *FileProducer {
+	return &FileProducer{inputFile: inputFile}
 }

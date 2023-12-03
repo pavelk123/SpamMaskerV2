@@ -9,61 +9,61 @@ type producer interface {
 }
 
 type presenter interface {
-	present([]string) error
+	present(data []string) error
 }
 
-//Service is structure for masking url service
-//Including inside 2 fields:
-//producer - for data provider unit
-//presenter - for data presenter unit
+// Including inside 2 fields:
+// producer - for data provider unit
+// presenter - for data presenter unit.
 type Service struct {
 	prod producer
 	pres presenter
 }
 
-//Run is method for start Service working
 func (s *Service) Run() error {
-	
-
 	data, err := s.prod.produce()
 	if err != nil {
-		return fmt.Errorf("s.prod.produce: %w", err)
+		return fmt.Errorf("service.producer.produce: %w", err)
 	}
 
 	for i := range data {
-		data[i] = s.maskingUrl(data[i])
+		data[i] = s.maskingURL(data[i])
 	}
 
 	if err = s.pres.present(data); err != nil {
-		return fmt.Errorf("s.prod.produce: %w", err)
+		return fmt.Errorf("service.presentor.present: %w", err)
 	}
 
 	return nil
 }
 
-func (s Service) maskingUrl(str string) string {
-	var startUrlIndex, isMasking = 0, false
+func (s *Service) maskingURL(str string) string {
+	const symbolsDetectedCount int = 7
+
+	startURLIndex := 0
+	isMasking := false
 	buffer := []byte(str)
 
-	for i := range buffer {
-		if buffer[i] == 'h' && string(buffer[i:i+7]) == "http://" {
-			startUrlIndex = i + 7
+	for index := range buffer {
+		if buffer[index] == 'h' && string(buffer[index:index+7]) == "http://" {
+			startURLIndex = index + symbolsDetectedCount
 			isMasking = true
 		}
 
-		if startUrlIndex != 0 && i >= startUrlIndex && isMasking {
-			if buffer[i] == ' ' {
+		if startURLIndex != 0 && index >= startURLIndex && isMasking {
+			if buffer[index] == ' ' {
 				isMasking = false
+
 				continue
 			}
 
-			buffer[i] = '*'
+			buffer[index] = '*'
 		}
 	}
+
 	return string(buffer)
 }
 
-//NewService - constructor for Service for masking Urls spam
 func NewService(prod producer, pres presenter) *Service {
 	return &Service{
 		prod: prod,
