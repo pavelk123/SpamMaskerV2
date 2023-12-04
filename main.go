@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"os"
 
-	service "github.com/pavelk123/SpamMaskerV2/service"
+	"github.com/pavelk123/SpamMaskerV2/maskerspam"
 )
 
 const (
@@ -23,17 +23,14 @@ func main() {
 	switch len(paths) {
 	case zeroArgs:
 		slog.Error("Params not provided")
-
 		return
 
 	case oneArg:
 		inputFile = paths[0]
-
 		outputFile = ""
 
 	case twoArgs:
 		inputFile = paths[0]
-
 		outputFile = paths[1]
 
 	default:
@@ -42,11 +39,9 @@ func main() {
 		return
 	}
 
-	fileProducer := service.NewFileProducer(inputFile)
-
-	filePresenter := service.NewFilePresenter(outputFile)
-
-	service := service.NewService(fileProducer, filePresenter)
+	fileProducer := maskerspam.NewFileProducer(inputFile)
+	filePresenter := maskerspam.NewFilePresenter(outputFile)
+	service := maskerspam.NewService(fileProducer, filePresenter)
 
 	if err := service.Run(); err != nil {
 		slog.Error(err.Error())

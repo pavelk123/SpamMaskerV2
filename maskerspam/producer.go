@@ -1,4 +1,4 @@
-package service
+package maskerspam
 
 import (
 	"bufio"
@@ -9,8 +9,16 @@ import (
 	"strings"
 )
 
+// FileProducer - for data produce unit.
+
 type FileProducer struct {
 	inputFile string
+}
+
+// NewFileProducer is constructor of FileProducer
+
+func NewFileProducer(inputFile string) *FileProducer {
+	return &FileProducer{inputFile: inputFile}
 }
 
 func (f *FileProducer) produce() ([]string, error) {
@@ -22,7 +30,7 @@ func (f *FileProducer) produce() ([]string, error) {
 
 	file, err := os.OpenFile(f.inputFile, os.O_RDONLY, fs.FileMode(fileMode))
 	if err != nil {
-		return nil, fmt.Errorf("os.OpenFile: %w", err)
+		return nil, fmt.Errorf("open file: %w", err)
 	}
 
 	var writer bytes.Buffer
@@ -31,21 +39,15 @@ func (f *FileProducer) produce() ([]string, error) {
 
 	for sc.Scan() {
 		if _, err = writer.WriteString(sc.Text()); err != nil {
-			return nil, fmt.Errorf("writer.WriteString: %w", err)
+			return nil, fmt.Errorf("write string: %w", err)
 		}
 
 		writer.WriteString("\n")
 	}
 
 	if err = file.Close(); err != nil {
-		return nil, fmt.Errorf("file.Close: %w", err)
+		return nil, fmt.Errorf("file close: %w", err)
 	}
 
 	return []string{strings.TrimSpace(writer.String())}, nil
-}
-
-// NewFileProducer is constructor of fileProducer
-
-func NewFileProducer(inputFile string) *FileProducer {
-	return &FileProducer{inputFile: inputFile}
 }

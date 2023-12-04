@@ -1,4 +1,4 @@
-package service
+package maskerspam
 
 import (
 	"fmt"
@@ -15,6 +15,7 @@ type presenter interface {
 // Including inside 2 fields:
 // producer - for data provider unit
 // presenter - for data presenter unit.
+
 type Service struct {
 	prod producer
 	pres presenter
